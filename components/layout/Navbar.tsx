@@ -49,12 +49,13 @@ const Navbar = () => {
                 <span className="absolute bottom-0 right-0 w-0 h-0.5 bg-primary group-hover:w-full transition-all duration-300" />
               </Link>
             ))}
-            <Link
-              href="/register"
+            <a
+              target="_blank"
+              href="https://docs.google.com/forms/d/e/1FAIpQLScsoycOgcJVuutKLH68j8Ncpz__ChKgT0ZSrQSUseYw9OZFdA/viewform?usp=dialog"
               className="px-6 py-2.5 bg-primary text-white rounded-full hover:bg-primary-hover transition-all hover:scale-105 font-medium"
             >
               التسجيل
-            </Link>
+            </a>
           </div>
 
           {/* Mobile Menu Button */}

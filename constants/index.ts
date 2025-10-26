@@ -14,11 +14,11 @@ import {
   sportsTraining,
   technologyLab,
 } from "./images";
-// { label: "التوظيف", href: "#employment" },
+
 const navItems = [
-  { label: "الرئيسية", href: "/#hero" },
-  { label: "النوادي", href: "/#clubs" },
-  { label: "اتصل بنا", href: "/#contact" },
+  { label: "الرئيسية", href: "#hero" },
+  { label: "النوادي", href: "#clubs" },
+  { label: "اتصل بنا", href: "#contact" },
 ];
 const jobs = [
   {

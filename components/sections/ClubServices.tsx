@@ -3,7 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, ChevronLeft, ChevronRight, X } from "lucide-react";
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { clubs } from "@/constants";
 
 const ClubServices = () => {
@@ -11,6 +11,18 @@ const ClubServices = () => {
   const [selectedClub, setSelectedClub] = useState<(typeof clubs)[0] | null>(
     null,
   );
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isScrollingRef = useRef(false);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const nextSlide = () => {
     setCurrentIndex((prev) => (prev + 1) % clubs.length);
@@ -20,13 +32,57 @@ const ClubServices = () => {
     setCurrentIndex((prev) => (prev - 1 + clubs.length) % clubs.length);
   };
 
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const container = e.currentTarget;
-    const scrollPosition = container.scrollLeft;
+  // Debounced scroll handler with null checks
+  const handleScroll = useCallback(
+    (e: React.UIEvent<HTMLDivElement>) => {
+      // Null check for the event target
+      const container = e.currentTarget;
+      if (!container) return;
+
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+
+      scrollTimeoutRef.current = setTimeout(() => {
+        // Double check container still exists
+        if (!container) return;
+
+        const scrollPosition = container.scrollLeft;
+        const itemWidth = container.offsetWidth;
+
+        if (itemWidth === 0) return; // Prevent division by zero
+
+        const newIndex = Math.round(scrollPosition / itemWidth);
+
+        if (
+          newIndex !== currentIndex &&
+          newIndex >= 0 &&
+          newIndex < clubs.length
+        ) {
+          setCurrentIndex(newIndex);
+        }
+
+        isScrollingRef.current = false;
+      }, 150);
+
+      isScrollingRef.current = true;
+    },
+    [currentIndex],
+  );
+
+  // Scroll to specific index for mobile with null check
+  const scrollToIndex = useCallback((index: number) => {
+    const container = scrollContainerRef.current;
+    if (!container) return;
+
     const itemWidth = container.offsetWidth;
-    const newIndex = Math.round(scrollPosition / itemWidth);
-    setCurrentIndex(newIndex);
-  };
+    if (itemWidth === 0) return;
+
+    container.scrollTo({
+      left: itemWidth * index,
+      behavior: "smooth",
+    });
+  }, []);
 
   return (
     <section id="clubs" className="py-20 gradient-section">
@@ -52,23 +108,30 @@ const ClubServices = () => {
         <div className="max-w-5xl mx-auto">
           {/* Carousel Container */}
           <div className="relative">
-            {/* Snap Scroll Container for Mobile */}
+            {/* Mobile Snap Scroll Container */}
             <div
-              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide md:hidden h-[500px] rounded-3xl"
+              ref={scrollContainerRef}
+              className="flex overflow-x-auto snap-x snap-mandatory scrollbar-hide md:hidden rounded-3xl"
               onScroll={handleScroll}
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+                WebkitOverflowScrolling: "touch",
+              }}
             >
               {clubs.map((club, index) => (
                 <div
-                  key={index}
+                  key={`mobile-${index}`}
                   className="flex-shrink-0 w-full snap-center snap-always"
                 >
-                  <div className="relative h-full">
+                  <div className="relative h-[500px] min-h-[500px]">
                     <Image
-                      width={500}
+                      width={800}
                       height={500}
                       src={club.image || "/placeholder.svg"}
                       alt={club.name}
                       className="w-full h-full object-cover"
+                      priority={index === 0}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -82,7 +145,7 @@ const ClubServices = () => {
 
                       <button
                         onClick={() => setSelectedClub(club)}
-                        className="px-6 py-2.5 bg-accent text-white rounded-full font-medium hover:bg-accent-hover transition-all hover:scale-105 text-sm"
+                        className="px-6 py-2.5 bg-accent text-white rounded-full font-medium hover:bg-accent-hover transition-all hover:scale-105 text-sm active:scale-95"
                       >
                         المزيد من التفاصيل
                       </button>
@@ -105,11 +168,12 @@ const ClubServices = () => {
                 >
                   <div className="relative h-full">
                     <Image
-                      width={500}
-                      height={500}
+                      width={1200}
+                      height={600}
                       src={clubs[currentIndex]?.image || "/placeholder.svg"}
                       alt={clubs[currentIndex]?.name || "Club name"}
                       className="w-full h-full object-cover"
+                      priority
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent" />
 
@@ -149,12 +213,15 @@ const ClubServices = () => {
               </button>
             </div>
 
-            {/* Dots */}
+            {/* Dots Navigation */}
             <div className="flex justify-center gap-2 mt-6">
               {clubs.map((_, index) => (
                 <button
-                  key={index}
-                  onClick={() => setCurrentIndex(index)}
+                  key={`dot-${index}`}
+                  onClick={() => {
+                    setCurrentIndex(index);
+                    scrollToIndex(index);
+                  }}
                   aria-label={`Go to slide ${index + 1}`}
                   className={`h-3 rounded-full transition-all ${
                     index === currentIndex
@@ -199,8 +266,8 @@ const ClubServices = () => {
               </div>
 
               <Image
-                width={500}
-                height={500}
+                width={800}
+                height={400}
                 src={selectedClub.image || "/placeholder.svg"}
                 alt={selectedClub.name}
                 className="w-full h-48 sm:h-64 object-cover rounded-2xl mb-6"
@@ -217,9 +284,9 @@ const ClubServices = () => {
                 <div>
                   <h4 className="font-bold text-lg mb-2">الأنشطة:</h4>
                   <div className="flex flex-wrap gap-2">
-                    {selectedClub.activities.map((activity) => (
+                    {selectedClub.activities.map((activity, idx) => (
                       <span
-                        key={activity}
+                        key={`${activity}-${idx}`}
                         className="px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 text-primary rounded-full text-sm"
                       >
                         {activity}
