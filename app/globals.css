@@ -37,6 +37,19 @@
     --sidebar-ring: oklch(0.708 0 0);
     --background: oklch(1 0 0);
     --foreground: oklch(0.145 0 0);
+
+    /* Toast Colors */
+    --toast-bg: #ffffff;
+    --toast-text: #1f2937;
+    --toast-border: #e5e7eb;
+    --toast-success-bg: #10b981;
+    --toast-success-text: #ffffff;
+    --toast-error-bg: #ef4444;
+    --toast-error-text: #ffffff;
+    --toast-warning-bg: #f59e0b;
+    --toast-warning-text: #ffffff;
+    --toast-info-bg: #3b82f6;
+    --toast-info-text: #ffffff;
 }
 
 .dark {
@@ -141,6 +154,18 @@
     --color-popover: var(--popover);
     --color-card-foreground: var(--card-foreground);
     --color-card: var(--card);
+
+    --color-toast-bg: var(--toast-bg);
+    --color-toast-text: var(--toast-text);
+    --color-toast-border: var(--toast-border);
+    --color-toast-success-bg: var(--toast-success-bg);
+    --color-toast-success-text: var(--toast-success-text);
+    --color-toast-error-bg: var(--toast-error-bg);
+    --color-toast-error-text: var(--toast-error-text);
+    --color-toast-warning-bg: var(--toast-warning-bg);
+    --color-toast-warning-text: var(--toast-warning-text);
+    --color-toast-info-bg: var(--toast-info-bg);
+    --color-toast-info-text: var(--toast-info-text);
 }
 
 /* Base styles */

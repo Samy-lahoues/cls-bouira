@@ -1,35 +1,24 @@
 "use client";
-
-import type React from "react";
+import { toast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
 import { Mail, MapPin, Phone, Send, Facebook, Instagram } from "lucide-react";
-import { useState } from "react";
+import { useForm, ValidationError } from "@formspree/react";
 
 const Contact = () => {
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    phone: "+213",
-    message: "",
-  });
-  const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    setIsSubmitting(false);
-    alert("✅ شكراً لتواصلكم، سنتصل بكم قريباً!");
-    setFormData({ name: "", email: "", phone: "+213", message: "" });
-  };
-
+  const [state, handleSubmit] = useForm("xzzkzddy");
+  if (state.succeeded) {
+    toast({
+      title: "Tanks for messaging us!",
+      description: "Your message has been sent successfully!",
+      variant: "success",
+    });
+  }
   // Prevent user from removing "+213"
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value;
     if (!value.startsWith("+213")) {
       value = "+213";
     }
-    setFormData({ ...formData, phone: value });
   };
 
   return (
@@ -69,48 +58,69 @@ const Contact = () => {
             </h3>
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className="block text-foreground font-medium mb-2">
+                <label
+                  htmlFor="name"
+                  className="block text-foreground font-medium mb-2"
+                >
                   الاسم الكامل<span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="name"
+                  name="name"
                   type="text"
                   required
-                  value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
                   className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary outline-none transition-colors"
                   placeholder="أدخل اسمك الكامل"
                 />
-              </div>
-
-              <div>
-                <label className="block text-foreground font-medium mb-2">
-                  البريد الإلكتروني<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="email"
-                  required
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData({ ...formData, email: e.target.value })
-                  }
-                  className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary outline-none transition-colors"
-                  placeholder="example@email.com"
+                <ValidationError
+                  prefix="Name"
+                  field="name"
+                  errors={state.errors}
                 />
               </div>
 
               <div>
-                <label className="block text-foreground font-medium mb-2">
+                <label
+                  htmlFor="email"
+                  className="block text-foreground font-medium mb-2"
+                >
+                  البريد الإلكتروني<span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary outline-none transition-colors"
+                  placeholder="example@email.com"
+                />
+                <ValidationError
+                  prefix="Email"
+                  field="email"
+                  errors={state.errors}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="phone"
+                  className="block text-foreground font-medium mb-2"
+                >
                   رقم الهاتف<span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="phone"
+                  name="phone"
                   type="tel"
                   required
-                  value={formData.phone}
                   onChange={handlePhoneChange}
                   className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary outline-none transition-colors"
                   placeholder="+213 6XX XXX XXX"
+                />
+                <ValidationError
+                  prefix="Phone"
+                  field="phone"
+                  errors={state.errors}
                 />
                 <p className="text-xs text-foreground-muted mt-1">
                   يرجى إدخال رقمك بصيغة الجزائر (+213)
@@ -118,27 +128,33 @@ const Contact = () => {
               </div>
 
               <div>
-                <label className="block text-foreground font-medium mb-2">
+                <label
+                  htmlFor="message"
+                  className="block text-foreground font-medium mb-2"
+                >
                   الرسالة<span className="text-red-500">*</span>
                 </label>
                 <textarea
+                  id="message"
+                  name="message"
                   required
-                  value={formData.message}
-                  onChange={(e) =>
-                    setFormData({ ...formData, message: e.target.value })
-                  }
                   rows={5}
                   className="w-full px-4 py-3 rounded-xl border-2 border-border focus:border-primary outline-none transition-colors resize-none"
                   placeholder="اكتب رسالتك هنا..."
+                />
+                <ValidationError
+                  prefix="Message"
+                  field="message"
+                  errors={state.errors}
                 />
               </div>
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={state.submitting}
                 className="w-full py-4 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-all hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? (
+                {state.submitting ? (
                   <span>⏳ جاري الإرسال...</span>
                 ) : (
                   <>
